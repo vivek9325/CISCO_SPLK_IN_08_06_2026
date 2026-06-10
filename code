@@ -1,0 +1,120 @@
+GitHub URL ---> https://github.com/vivek9325/CISCO_SPLK_IN_08_06_2026.git
+
+app_family_mots,active_org,asset_id,application_name,auto_sub_cat3,closed_date,current_ticket_state,durations,delivery_center,effort,hold_time,last_modified_time,last_resolved_date,lob_name,owner_name,problem_abstract,problem_mapping,reported_date_time,responded_date,service_restored_date,severity,sla_response,sla_contract,system_user,ticket_number,ticket_source,ticket_type,time_submitted,work_queue
+
+
+index=vk_idx source=Sample_tickets.csv 
+| stats count by severity 
+| appendcols 
+    [ search index=_internal 
+    | stats count as total by log_level]
+
+
+index=vk_idx source=Sample_tickets.csv 
+| stats count by severity 
+| append
+    [ search index=_internal 
+    | stats count as total by log_level]
+
+
+index=vk_idx source=Sample_tickets.csv 
+| stats count as total by severity 
+| eval threshold=20 
+| search severity=3 OR severity=4 
+| where total > threshold
+
+https://help.splunk.com/en/splunk-enterprise/search/spl-search-reference/10.0/time-format-variables-and-modifiers/date-and-time-format-variables
+
+
+| makeresults 
+| eval data="Vivek|admin,developer,trainer;amit|developer,tester;sumit|admin" 
+| makemv delim=";" data 
+| mvexpand data 
+| eval user=mvindex(split(data,"|"),0) 
+| eval roles=mvindex(split(data,"|"),1) 
+| table user, roles
+
+
+| makeresults 
+| eval data="Vivek|admin,developer,trainer;amit|developer,tester;sumit|admin" 
+| makemv delim=";" data 
+| mvexpand data 
+| eval user=mvindex(split(data,"|"),0) 
+| eval roles=mvindex(split(data,"|"),1) 
+| makemv delim="," roles 
+| eval total_roles=mvcount(roles) 
+| table user roles total_roles
+
+
+| makeresults 
+| eval data="Vivek|admin,admin,developer,trainer;amit|developer,tester;sumit|admin" 
+| makemv delim=";" data 
+| mvexpand data 
+| eval user=mvindex(split(data,"|"),0) 
+| eval roles=mvindex(split(data,"|"),1) 
+| makemv delim="," roles 
+| eval unique_roles = mvdedup(roles) 
+| eval sortted_roles = mvsort(unique_roles) 
+| eval formatted_role = mvjoin(roles," | ") 
+| table user, roles, formatted_role, sortted_roles, unique_roles
+
+index=vk_idx source=Sample_tickets.csv 
+| stats count by severity, current_ticket_state
+
+`vk_no_arg`
+
+
+| inputlookup vk_sample_lookup.csv
+
+
+index=vk_idx source="sample_tickets.csv" 
+| table ticket_number, severity, current_ticket_state 
+| lookup vk_lookup_definition ticket_number OUTPUT time_taken AS time_consumed
+
+
+index=vk_idx source=Sample_tickets.csv severity=$sev$ 
+| stats count by current_ticket_state
+
+
+https://www.splunk.com/en_us/download.html
+
+index=vk_idx source=Sample_tickets.csv $ticket_state$| stats count by severity
+
+
+==============================================================================================
+
+| makeresults 
+| eval price_str="1250", qty_str="3" 
+| eval price = tonumber(price_str), qty=tonumber(qty_str)
+
+
+
+
+
+
+| makeresults
+| eval email="  Vivek.Arora@TRAINING.COM  "
+| eval clean_email=trim(email)
+| eval lower_email=lower(clean_email)
+| eval upper_email=upper(clean_email)
+| eval username=replace(lower_email,"@.*","")
+| eval first_5_chars=substr(clean_email,1,5)
+| eval email_length=len(clean_email)
+| table email clean_email lower_email upper_email username first_5_chars email_length
+
+| makeresults count=4
+| streamstats count as id
+| eval value=case(id=1,"120", id=2,"error", id=3,null(), id=4,"450")
+| eval missing_check=if(isnull(value),"Missing","Available")
+| eval not_null_check=if(isnotnull(value),"Yes","No")
+| eval numeric_check=if(isnum(value),"Numeric","Not Numeric")
+| eval string_check=if(isstr(value),"String","Not String")
+| eval value_type=typeof(value)
+| table id value missing_check not_null_check numeric_check string_check value_type
+
+| makeresults count=6
+| streamstats count as row
+| eval department=case(row=1,"HR", row=3,"Finance", row=5,"Sales")
+| eval employee=case(row=1,"Amit", row=2,"Neha", row=3,"Raj", row=4,"Pooja", row=5,"Karan", row=6,"Sneha")
+| table row department employee
+| filldown department
